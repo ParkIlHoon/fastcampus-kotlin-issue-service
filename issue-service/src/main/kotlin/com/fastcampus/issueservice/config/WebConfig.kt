@@ -7,11 +7,13 @@ import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
+import org.springframework.web.servlet.config.annotation.EnableWebMvc
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport
 
 /**
  * MVC 설정
  */
+@EnableWebMvc
 @Configuration
 class WebConfig(
     private val authUserHandlerArgumentResolver: AuthUserHandlerArgumentResolver,
