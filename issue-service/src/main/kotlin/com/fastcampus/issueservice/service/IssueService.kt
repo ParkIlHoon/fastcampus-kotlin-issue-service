@@ -2,6 +2,7 @@ package com.fastcampus.issueservice.service
 
 import com.fastcampus.issueservice.domain.Issue
 import com.fastcampus.issueservice.domain.IssueRepository
+import com.fastcampus.issueservice.domain.enums.IssueStatus
 import com.fastcampus.issueservice.model.IssueRequest
 import com.fastcampus.issueservice.model.IssueResponse
 import org.springframework.stereotype.Service
@@ -32,6 +33,18 @@ class IssueService(
             status = request.status,
         )
         return IssueResponse(issueRepository.save(issue))
+    }
+
+    /**
+     * 이슈 목록 조회
+     *
+     * @param userId 사용자 아이디
+     * @param status 이슈 상태
+     */
+    @Transactional(readOnly = true)
+    fun getAll(userId: Long, status: IssueStatus): List<IssueResponse> {
+        return issueRepository.findAllByUserIdAndStatusOrderByCreatedAtDesc(userId, status)
+            .map { IssueResponse(it) }
     }
 
 }
