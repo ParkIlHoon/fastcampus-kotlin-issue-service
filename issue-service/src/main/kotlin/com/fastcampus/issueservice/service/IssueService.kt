@@ -3,6 +3,7 @@ package com.fastcampus.issueservice.service
 import com.fastcampus.issueservice.domain.Issue
 import com.fastcampus.issueservice.domain.IssueRepository
 import com.fastcampus.issueservice.domain.enums.IssueStatus
+import com.fastcampus.issueservice.exception.IssueNotFoundException
 import com.fastcampus.issueservice.exception.NotFoundException
 import com.fastcampus.issueservice.model.IssueRequest
 import com.fastcampus.issueservice.model.IssueResponse
@@ -60,7 +61,7 @@ class IssueService(
      */
     @Transactional(readOnly = true)
     fun get(id: Long): Any {
-        val issue = issueRepository.findByIdOrNull(id) ?: throw NotFoundException("이슈가 존재하지 않습니다.")
+        val issue = issueRepository.findByIdOrNull(id) ?: throw IssueNotFoundException()
         return IssueResponse(issue)
     }
 
@@ -75,7 +76,7 @@ class IssueService(
      */
     @Transactional
     fun update(id: Long, userId: Long, request: IssueRequest): IssueResponse {
-        val issue = issueRepository.findByIdOrNull(id) ?: throw NotFoundException("이슈가 존재하진 않습니다.")
+        val issue = issueRepository.findByIdOrNull(id) ?: throw IssueNotFoundException()
         return with(issue) {
             summary = request.summary
             description = request.description
@@ -86,6 +87,18 @@ class IssueService(
 
             IssueResponse(issueRepository.save(this))
         }
+    }
+
+    /**
+     * 이슈 삭제
+     *
+     * @param id 삭제할 이슈 아이디
+     * @throws NotFoundException 아이디에 해당하는 이슈가 존재하지 않는 경우
+     */
+    @Transactional
+    fun delete(id: Long) {
+        val issue = issueRepository.findByIdOrNull(id) ?: throw IssueNotFoundException()
+        issueRepository.delete(issue)
     }
 
 }
