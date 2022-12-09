@@ -4,6 +4,7 @@ import com.fastcampus.issueservice.config.AuthUser
 import com.fastcampus.issueservice.domain.enums.IssueStatus
 import com.fastcampus.issueservice.model.IssueRequest
 import com.fastcampus.issueservice.service.IssueService
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 
 /**
@@ -63,4 +64,17 @@ class IssueController(
         @PathVariable("id") id: Long,
         @RequestBody request: IssueRequest
     ) = issueService.update(id = id, userId = authUser.userId, request)
+
+    /**
+     * 이슈 삭제 요청
+     * @param authUser 사용자 인증 정보
+     * @param id 삭제할 이슈 아이디
+     */
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun delete(
+        authUser: AuthUser,
+        @PathVariable("id") id: Long
+    ) = issueService.delete(id)
+
 }

@@ -12,17 +12,6 @@ sealed class ServerException(
 ): RuntimeException(message)
 
 /**
- * 찾을 수 없음 예외 클래스
- *
- * 커스텀 예외 코드 : 404
- *
- * @property message 커스텀 예외 메시지
- */
-data class NotFoundException(
-    override val message: String,
-): ServerException(404, message)
-
-/**
  * 인증 예외 클래스
  *
  * 커스텀 예외 코드 : 401
