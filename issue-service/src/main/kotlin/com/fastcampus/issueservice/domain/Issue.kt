@@ -44,5 +44,8 @@ class Issue(
     @Enumerated(value = EnumType.STRING)
     var status: IssueStatus,
 
+    @OneToMany(fetch = FetchType.EAGER)
+    val comments: MutableList<Comment> = mutableListOf()
+
     ): BaseEntity() {
 }
