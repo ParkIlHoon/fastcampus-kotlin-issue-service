@@ -39,9 +39,28 @@ class IssueController(
         @RequestParam(required = false, defaultValue = "TODO") status: IssueStatus,
     ) = issueService.getAll(userId = authUser.userId, status)
 
+    /**
+     * 이슈 단건 조회 요청
+     *
+     * @param authUser 사용자 인증 정보
+     * @param id 조회할 이슈 아이디
+     */
     @GetMapping("/{id}")
     fun getDetail(
         authUser: AuthUser,
         @PathVariable("id") id: Long
     ) = issueService.get(id)
+
+    /**
+     * 이슈 수정 요청
+     * @param authUser 사용자 인증 정보
+     * @param id 수정할 이슈 아이디
+     * @param request 수정할 정보
+     */
+    @PutMapping("/{id}")
+    fun update(
+        authUser: AuthUser,
+        @PathVariable("id") id: Long,
+        @RequestBody request: IssueRequest
+    ) = issueService.update(id = id, userId = authUser.userId, request)
 }
