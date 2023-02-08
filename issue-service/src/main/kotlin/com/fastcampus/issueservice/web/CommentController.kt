@@ -3,12 +3,8 @@ package com.fastcampus.issueservice.web
 import com.fastcampus.issueservice.config.AuthUser
 import com.fastcampus.issueservice.model.CommentRequest
 import com.fastcampus.issueservice.service.CommentService
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.http.HttpStatus
+import org.springframework.web.bind.annotation.*
 
 /**
  * 이슈 코멘트 컨트롤러
@@ -45,4 +41,19 @@ class CommentController(
         @PathVariable("issueId") issueId: Long,
     ) = commentService.get(issueId)
 
+    @PutMapping("/{id}")
+    fun update(
+        authUser: AuthUser,
+        @PathVariable("issueId") issueId: Long,
+        @PathVariable("id") commentId: Long,
+        @RequestBody request: CommentRequest,
+    ) = commentService.update(commentId, authUser.userId, request)
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun delete(
+        authUser: AuthUser,
+        @PathVariable("issueId") issueId: Long,
+        @PathVariable("id") commentId: Long,
+    ) = commentService.delete(issueId, commentId, authUser.userId)
 }

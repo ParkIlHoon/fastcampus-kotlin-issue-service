@@ -55,4 +55,20 @@ class CommentService(
             .map { it.toResponse() }
     }
 
+    @Transactional
+    fun update(commentId: Long, userId: Long, request: CommentRequest): CommentResponse? {
+        return commentRepository.findByIdAndUserId(commentId, userId)?.run {
+            body = request.body
+            commentRepository.save(this).toResponse()
+        }
+    }
+
+    @Transactional
+    fun delete(issueId: Long, commentId: Long, userId: Long) {
+        val issue = issueRepository.findByIdOrNull(issueId) ?: throw IssueNotFoundException()
+        commentRepository.findByIdAndUserId(commentId, userId)?.let { comment ->
+            issue.comments.remove(comment)
+        }
+    }
+
 }
