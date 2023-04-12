@@ -27,7 +27,7 @@ class CommentController(
         authUser: AuthUser,
         @PathVariable("issueId") issueId: Long,
         @RequestBody request: CommentRequest,
-    ) = commentService.create(issueId, authUser.userId, authUser.userName, request)
+    ) = commentService.create(issueId, authUser.userId, authUser.username, request)
 
     /**
      * 코멘트 목록 조회 요청

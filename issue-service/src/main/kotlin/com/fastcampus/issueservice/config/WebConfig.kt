@@ -1,5 +1,9 @@
 package com.fastcampus.issueservice.config
 
+import com.fastcampus.issueservice.exception.UnauthorizedException
+import com.fasterxml.jackson.annotation.JsonProperty
+import kotlinx.coroutines.runBlocking
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.MethodParameter
 import org.springframework.stereotype.Component
@@ -7,6 +11,9 @@ import org.springframework.web.bind.support.WebDataBinderFactory
 import org.springframework.web.context.request.NativeWebRequest
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
+import org.springframework.web.reactive.function.client.WebClient
+import org.springframework.web.reactive.function.client.awaitBody
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport
 
 /**
@@ -27,6 +34,16 @@ class WebConfig(
             add(authUserHandlerArgumentResolver)
         }
     }
+
+    override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
+        registry.addResourceHandler("/**")
+            .addResourceLocations(
+                "classpath:/META-INF/resources/",
+                "classpath:/resources/",
+                "classpath:/static/",
+                "classpath:/public/",
+            )
+    }
 }
 
 /**
@@ -37,7 +54,9 @@ class WebConfig(
  * @see AuthUser 주입되는 사용자 인증정보 클래스
  */
 @Component
-class AuthUserHandlerArgumentResolver :HandlerMethodArgumentResolver {
+class AuthUserHandlerArgumentResolver(
+    @Value("\${auth.url}") val authUrl: String,
+) :HandlerMethodArgumentResolver {
     override fun supportsParameter(parameter: MethodParameter): Boolean =
         AuthUser::class.java.isAssignableFrom(parameter.parameterType)
 
@@ -47,11 +66,16 @@ class AuthUserHandlerArgumentResolver :HandlerMethodArgumentResolver {
         webRequest: NativeWebRequest,
         binderFactory: WebDataBinderFactory?
     ): Any? {
-        // TODO: 사용자 인증
-        return AuthUser(
-            userId = 1,
-            userName = "테스트 계정",
-        )
+        val authHeader: String = webRequest.getHeader("Authorization") ?: throw UnauthorizedException()
+
+        return runBlocking {
+            WebClient.create()
+                .get()
+                .uri(authUrl)
+                .header("Authorization", authHeader)
+                .retrieve()
+                .awaitBody<AuthUser>()
+        }
     }
 }
 
@@ -59,11 +83,13 @@ class AuthUserHandlerArgumentResolver :HandlerMethodArgumentResolver {
  * 사용자 인증정보
  *
  * @property userId 사용자 아이디
- * @property userName 사용자 이름
+ * @property username 사용자 이름
  * @property profileUrl 프로필 주소
  */
 data class AuthUser(
+    @JsonProperty("id")
     val userId: Long,
-    val userName: String,
+    val username: String,
+    val email: String,
     val profileUrl: String? = null
 )
