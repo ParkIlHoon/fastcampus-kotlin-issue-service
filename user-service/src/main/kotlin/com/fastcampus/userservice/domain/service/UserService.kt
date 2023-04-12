@@ -71,13 +71,7 @@ class UserService(
     }
 
     suspend fun getByToken(token: String): MeResponse {
-        val user = cacheManager.awaitGetOrPut(key = token, ttl = CACHE_TTL) {
-            // 캐시가 유효하지 않을 때 동작
-            val decodedJWT = JWTUtils.decode(token, jwtProperties.secret, jwtProperties.issuer)
-            val userId: Long = decodedJWT.claims["userId"]?.asLong() ?: throw InvalidJwtTokenException()
-
-            get(userId)
-        }
+        val user = getUser(token)
 
         return MeResponse(
             id = user.id!!,
@@ -90,4 +84,21 @@ class UserService(
     }
 
     suspend fun get(userId: Long) : User = userRepository.findById(userId) ?: throw UserNotFoundException()
+
+    suspend fun edit(token: String, username: String, profileUrl: String?): User {
+        val user = getUser(token)
+        val updatedUser = user.copy(username = username, profileUrl = profileUrl ?: user.profileUrl)
+        return userRepository.save(updatedUser)
+            .also { cacheManager.awaitPut(key = token, value = it, ttl = CACHE_TTL) }
+    }
+
+    private suspend fun getUser(token: String): User {
+        return cacheManager.awaitGetOrPut(key = token, ttl = CACHE_TTL) {
+            // 캐시가 유효하지 않을 때 동작
+            val decodedJWT = JWTUtils.decode(token, jwtProperties.secret, jwtProperties.issuer)
+            val userId: Long = decodedJWT.claims["userId"]?.asLong() ?: throw InvalidJwtTokenException()
+
+            get(userId)
+        }
+    }
 }
